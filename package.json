@@ -1,0 +1,30 @@
+{
+  "name": "breview",
+  "version": "1.0.0",
+  "description": "A personal Book collection and review appication.",
+  "keywords": [
+    "book",
+    "review",
+    "reading",
+    "list",
+    "book",
+    "collection"
+  ],
+  "license": "ISC",
+  "author": "Akash",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "body-parser": "^2.2.0",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10",
+    "pg": "^8.16.3"
+  }
+}
