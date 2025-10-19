@@ -10,13 +10,9 @@ dotenv.config();
 const server = express();
 const port = process.env.PORT;
 const api = axios.create({
-  baseURL: "https://openlibrary.org/search.json",
+  baseURL: "https://www.googleapis.com/books/v1/volumes",
   params: {
-    q: "harry potter",
-    fields:
-      "edition_key,edition_count,first_publish_year,key,language,number_of_pages_median,ratings_count,ratings_average,title,type,first_sentence,author_key,author_name,id_amazon,id_google,isbn",
-    lang: "en",
-    limit: 5,
+    q: "the lord of the rings",
   },
 });
 
@@ -26,8 +22,8 @@ server.use(bodyParser.urlencoded({ extended: true }));
 
 async function fetchBooks() {
   const response = await api.get();
-  // console.log({ response: response.data.docs });
-  return response.data.docs;
+  console.log({ response: response.data.items });
+  return response.data.items;
 }
 
 server.get("/", async (req, res) => {
