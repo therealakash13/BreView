@@ -1,0 +1,23 @@
+<%- include('partials/header') %>
+<% if (books && books.length > 0) { %>
+<div class="grid">
+  <% books.forEach(book => { %>
+  <div class="card">
+    <img src="<%= book.cover %>" alt="<%= book.title %>" />
+    <div class="info">
+      <h2><%= book.title %></h2>
+      <p><strong>Author:</strong> <%= book.author_name[0] %></p>
+      <p><strong>Year:</strong> <%= book.first_publish_year %></p>
+      <p><strong>Rating:</strong> <%= book.ratings_average %></p>
+      <p><strong>Languages:</strong> <%= book.languages?books.Languages[0]:'' %></p>
+      <a href="https://openlibrary.org<%= book.key %>" target="_blank"
+        >View on Open Library</a
+      >
+    </div>
+  </div>
+  <% }); %>
+</div>
+<% } else { %>
+<p class="empty">Search for a book above 👆</p>
+<% } %>
+<%- include('partials/footer') %>
