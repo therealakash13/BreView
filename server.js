@@ -23,11 +23,11 @@ server.use(bodyParser.urlencoded({ extended: true }));
 async function fetchBooks() {
   const response = await api.get();
   console.log({ response: response.data.items });
-  return response.data.items;
+  // return response.data.items;
 }
 
 server.get("/", async (req, res) => {
-  // await fetchBooks();
+  await fetchBooks();
   res.render("index", { title: "BreView" });
 });
 
