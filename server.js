@@ -9,33 +9,60 @@ dotenv.config();
 
 const server = express();
 const port = process.env.PORT;
-const api = axios.create({
-  baseURL: "https://www.googleapis.com/books/v1/volumes",
-  params: {
-    q: "the lord of the rings",
-  },
+
+const pool = new pg.Pool({
+  user: `${process.env.DB_USER}`,
+  host: `${process.env.DB_HOST}`,
+  database: `${process.env.DB_DATABASE}`,
+  password: `${process.env.DB_PASSWORD}`,
+  port: process.env.DB_PORT,
 });
 
 server.set("view engine", "ejs");
 server.use(express.static("public"));
 server.use(bodyParser.urlencoded({ extended: true }));
 
-async function fetchBooks() {
-  const response = await api.get();
-  console.log({ response: response.data.items });
-  // return response.data.items;
-  // FIX Fix the table and DB and setup azios according to Google's Books API
+async function searchBook(str) {
+  try {
+    const response = await axios.get(
+      "https://www.googleapis.com/books/v1/volumes",
+      {
+        params: {
+          q: `${str}`,
+          key: process.env.API_KEY,
+          langRestrict: "en",
+          maxResults: 10,
+          printType: "books",
+          projection: "full",
+        },
+      }
+    );
+    console.log(response.data);
+    // Todo: Paginate using startIndex and maxResults
+    return response.data.items;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 server.get("/", async (req, res) => {
-  await fetchBooks();
-  res.render("index", { title: "BreView" });
+  const user = await pool.query(`SELECT * FROM users`);
+  const users = user.rows;
+  const book = await pool.query(`SELECT * FROM books`);
+  const books = book.rows;
+
+  res.render("index", { title: "BreView", books: books });
 });
 
 server.get("/search", async (req, res) => {
-  const booksArray = await fetchBooks();
+  res.render("search", { results: [], q: "" });
+});
 
-  res.render("search", { books: booksArray });
+server.post("/search", async (req, res) => {
+  const searchString = req.body.q;
+  const bookRes = await searchBook(searchString);
+
+  res.render("search", { results: bookRes, q: searchString });
 });
 
 server.listen(port, (err) => {

@@ -1,54 +1,56 @@
 <%- include('partials/header') %>
 
-<!-- <#% if (locals.query) { %>
-    <div class="search-container">
-        <form action="/search" method="GET" class="search-form">
-            <input type="text" name="q" placeholder="Search books..." value="<#%= query || '' %>" required>
-            <button type="submit">Search</button>
-        </form>
-    </div>
-<#% } %> -->
-
-<% if (books && books.length > 0) { %>
-  <div class="book-grid">
-    <% books.forEach(book => { %>
-      <div class="book-card">
-        <img 
-          src="<%= book.thumbnail || '/images/placeholder.png' %>" 
-          alt="<%= book.title %>" 
-          class="book-cover"
+<h1>Search Books</h1>
+      <form action="/search" method="post" class="search-bar">
+        <input
+          type="text"
+          name="q"
+          placeholder="Search by title, author, or ISBN..." 
+          value="<% q || '' %>"
+          required
         />
+        <button type="submit" class="btn-primary">Search</button>
+      </form>
 
-        <div class="book-info">
-          <h2><%= book.title %></h2>
-          <% if (book.authors) { %>
-            <p class="author"><strong>By:</strong> <%= book.authors.join(', ') %></p>
-          <% } %>
+      <% if (locals.q === undefined || locals.q === null) { %>
+      <h2>Type the Book title, author or ISBN.</h2>
+    <% } else if (results && results.length > 0) { %>
+      <h2>Results for "<%= locals.q %>"</h2>
+      
+      <!-- For paginaton -->
+      <% if (locals.pagination) { %>
+          <form class="pages" action="/search/" method="get">
+            <a href="/search?query=<%= search %>&page=<%= pagination.current_page - 1 %>" class="material-symbols-outlined prev" data-page_num="<%= pagination.current_page %>">arrow_circle_left</a>
+            <strong><%= pagination.current_page %></strong>
+            <a href="/search?query=<%= search %>&page=<%= pagination.current_page + 1 %>" class="material-symbols-outlined next disabled" data-has_next_page="<%= pagination.has_next_page %>">arrow_circle_right</a>
+          </form>
+      <% } %>
 
-          <% if (book.publishedDate) { %>
-            <p class="year"><strong>Published:</strong> <%= book.publishedDate %></p>
-          <% } %>
-
-          <% if (book.categories) { %>
-            <p class="category"><strong>Genre:</strong> <%= book.categories.join(', ') %></p>
-          <% } %>
-
-          <% if (book.description) { %>
-            <p class="desc"><%= book.description.substring(0, 150) %>...</p>
-          <% } %>
-
-          <div class="actions">
-            <a href="<%= book.infoLink %>" target="_blank">View on Google Books</a>
-            <a href="/books/<%= book.id %>">Details</a>
+      <div class="book-grid">
+        <% results.forEach(book => { %>
+          <div class="book-card">
+            <img
+              class="book-cover"
+              src="<%= book.volumeInfo.imageLinks.thumbnail || '/images/placeholder.jpg' %>"
+              alt="<%= book.volumeInfo.title %>"
+            />
+            <div class="book-info">
+              <h3><%= book.volumeInfo.title %></h3>
+              <p><strong>Author:</strong> <%= book.volumeInfo.authors ? book.volumeInfo.authors.join(', ') : 'Unknown' %></p>
+              <p><strong>Published:</strong> <%= book.volumeInfo.publishedDate || 'N/A' %></p>
+              <p class="description"><%= book.volumeInfo.description || 'No description available.' %></p>
+              
+              <div class="card-actions">
+                <a href="<%= book.previewLink %>" target="_blank">Preview</a>
+                <form action="/books/add" method="post">
+                  <input type="hidden" name="gb_id" value="<%= book.id %>" />
+                  <button type="submit" class="add-btn">Add to Library</button>
+                </form>
+              </div>
+            </div>
           </div>
-        </div>
+        <% }) %>
       </div>
-    <% }) %>
-  </div>
-<% } else if (query) { %>
-  <p class="empty">No results found for "<%= query %>".</p>
-<% } else { %>
-  <p class="empty">Search for a book above 👆</p>
-<% } %>
+    <% } %>
 
 <%- include('partials/footer') %>

@@ -1,1 +1,32 @@
+<%- include('partials/header') %>
 <h1>Welcome to <%= title %></h1>
+ <h1>My Library</h1>
+
+  <div class="book-grid">
+    <% books.forEach(book => { %>
+      <div class="book-card">
+        <img class="book-cover" src="<%= book.thumbnail %>" alt="<%= book.title %>" />
+
+        <div class="book-info">
+          <h3><%= book.title %></h3>
+          <p><strong>Author:</strong> <%= book.author_names ? book.author_names.join(', ') : 'Unknown' %></p>
+          <p><strong>Published:</strong> <%= book.pub_date || 'N/A' %></p>
+          <p class="description"><%= book.description || 'No description available.' %></p>
+
+          <div class="review-section">
+            <% if (book.review) { %>
+              <p><span class="rating">★ <%= book.rating %></span> - "<%= book.review %>"</p>
+            <% } else { %>
+              <p>No review yet</p>
+            <% } %>
+          </div>
+
+          <div class="card-actions">
+            <a href="<%= book.g_link %>" target="_blank">View</a>
+            <a href="/review/<%= book.id %>">Edit Review</a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<%- include('partials/footer') %>
