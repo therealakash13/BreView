@@ -24,6 +24,7 @@ async function fetchBooks() {
   const response = await api.get();
   console.log({ response: response.data.items });
   // return response.data.items;
+  // FIX Fix the table and DB and setup azios according to Google's Books API
 }
 
 server.get("/", async (req, res) => {
@@ -31,11 +32,11 @@ server.get("/", async (req, res) => {
   res.render("index", { title: "BreView" });
 });
 
-server.get("/search", async(req,res)=>{
+server.get("/search", async (req, res) => {
   const booksArray = await fetchBooks();
 
-  res.render('search',{books: booksArray})
-})
+  res.render("search", { books: booksArray });
+});
 
 server.listen(port, (err) => {
   if (err) console.log("Error while starting server :", err);

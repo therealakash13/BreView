@@ -2,17 +2,16 @@
 CREATE TABLE users (
     id                  SERIAL              PRIMARY KEY,
     name                VARCHAR(50)         UNIQUE                      NOT NULL,
-    personal_rating     NUMERIC(2,1),
-    personal_review     TEXT,
     accent              TEXT
 );
 
 -- AUTHORS TABLE
 CREATE TABLE authors (
     id                  SERIAL              PRIMARY KEY,
-    author_name         VARCHAR(100)        NOT NULL,
-    openlib_ids         TEXT[],               
-    year_of_publish     INTEGER
+    name                VARCHAR(100)        NOT NULL,
+    key                 TEXT,               
+    top_work            TEXT,
+    work_count          INTEGER
 );
 
 -- BOOKS TABLE
@@ -20,15 +19,30 @@ CREATE TABLE books (
     id                  SERIAL              PRIMARY KEY,
     user_id             INTEGER             REFERENCES users(id)        ON DELETE SET NULL,
     author_id           INTEGER             REFERENCES authors(id)      ON DELETE SET NULL,
-    book_key            TEXT,                    
-    title               VARCHAR(200)        NOT NULL,
-    cover_img           TEXT,                   
-    edition_count       INTEGER,
-    number_of_pages     INTEGER,
-    online_rating       NUMERIC(2,1),
+    gb_id               TEXT,                    
+    title               TEXT                NOT NULL,
+    author_names        TEXT[],
+    categories          TEXT[]                   
+    pub_date            VARCHAR(10),
+    description         TEXT,
+    pg_count            INTEGER,
     book_type           VARCHAR(50),
-    first_sentence      TEXT,
-    google_ids          TEXT[],
-    amazon_ids          TEXT[],
-    languages           TEXT[]
+    isbn_13             VARCHAR(13),
+    m_rating            TEXT,
+    thumbnail           TEXT,
+    language            CHAR(3),
+    g_link              TEXT                 UNIQUE                
 );
+
+-- USER REVIEWS
+CREATE TABLE reviews (
+    id                  SERIAL                PRIMARY KEY,
+    user_id             INTEGER               REFERENCES users(id) ON DELETE CASCADE,
+    book_id             INTEGER               REFERENCES books(id) ON DELETE CASCADE,
+    rating              NUMERIC(2,1)          CHECK (rating BETWEEN 0 AND 5),
+    review              TEXT,
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id,book_id)
+);
+
+-- TODO Fix the tables and create db according to the Googles Books API
