@@ -57,9 +57,8 @@
 
       <div class="card-actions">
         <a href="<%= book.previewLink %>" target="_blank">Preview</a>
-        <form action="/books/add" method="post">
-          <input type="hidden" name="gb_id" value="<%= book.id %>" />
-          <button type="submit" class="add-btn">Add to Library</button>
+        <form action="/books/add/<%= book.id %>" method="get">
+          <button type="submit" class="btn-primary">Add to Library</button>
         </form>
       </div>
     </div>
