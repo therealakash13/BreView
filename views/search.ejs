@@ -1,56 +1,69 @@
 <%- include('partials/header') %>
 
 <h1>Search Books</h1>
-      <form action="/search" method="post" class="search-bar">
-        <input
-          type="text"
-          name="q"
-          placeholder="Search by title, author, or ISBN..." 
-          value="<% q || '' %>"
-          required
-        />
-        <button type="submit" class="btn-primary">Search</button>
-      </form>
+<form action="/search" method="get" class="search-bar">
+  <input
+    type="text"
+    name="q"
+    placeholder="Search by title, author, or ISBN..."
+    value="<% locals.q || '' %>"
+    required
+  />
+  <button type="submit" class="btn-primary">Search</button>
+</form>
 
-      <% if (locals.q === undefined || locals.q === null) { %>
-      <h2>Type the Book title, author or ISBN.</h2>
-    <% } else if (results && results.length > 0) { %>
-      <h2>Results for "<%= locals.q %>"</h2>
-      
-      <!-- For paginaton -->
-      <% if (locals.pagination) { %>
-          <form class="pages" action="/search/" method="get">
-            <a href="/search?query=<%= search %>&page=<%= pagination.current_page - 1 %>" class="material-symbols-outlined prev" data-page_num="<%= pagination.current_page %>">arrow_circle_left</a>
-            <strong><%= pagination.current_page %></strong>
-            <a href="/search?query=<%= search %>&page=<%= pagination.current_page + 1 %>" class="material-symbols-outlined next disabled" data-has_next_page="<%= pagination.has_next_page %>">arrow_circle_right</a>
-          </form>
-      <% } %>
+<% if (locals.q && results.length > 0) { %>
+<div class="pages">
+  <% if (page > 0) { %>
+  <a
+    href="/search?q=<%= q %>&page=<%= page - 1 %>"
+    class="material-symbols-outlined prev"
+    >arrow_circle_left</a
+  >
+  <% } %>
 
-      <div class="book-grid">
-        <% results.forEach(book => { %>
-          <div class="book-card">
-            <img
-              class="book-cover"
-              src="<%= book.volumeInfo.imageLinks.thumbnail || '/images/placeholder.jpg' %>"
-              alt="<%= book.volumeInfo.title %>"
-            />
-            <div class="book-info">
-              <h3><%= book.volumeInfo.title %></h3>
-              <p><strong>Author:</strong> <%= book.volumeInfo.authors ? book.volumeInfo.authors.join(', ') : 'Unknown' %></p>
-              <p><strong>Published:</strong> <%= book.volumeInfo.publishedDate || 'N/A' %></p>
-              <p class="description"><%= book.volumeInfo.description || 'No description available.' %></p>
-              
-              <div class="card-actions">
-                <a href="<%= book.previewLink %>" target="_blank">Preview</a>
-                <form action="/books/add" method="post">
-                  <input type="hidden" name="gb_id" value="<%= book.id %>" />
-                  <button type="submit" class="add-btn">Add to Library</button>
-                </form>
-              </div>
-            </div>
-          </div>
-        <% }) %>
+  <strong><%= page + 1 %></strong>
+
+  <% if (results.length === 10) { %>
+  <a
+    href="/search?q=<%= q %>&page=<%= page + 1 %>"
+    class="material-symbols-outlined next"
+    >arrow_circle_right</a
+  >
+  <% } %>
+</div>
+
+<div class="book-grid">
+  <% results.forEach(book => { %>
+  <div class="book-card">
+    <img
+      class="book-cover"
+      src="<%= book.volumeInfo.imageLinks.thumbnail || '/images/placeholder.jpg' %>"
+      alt="<%= book.volumeInfo.title %>"
+    />
+    <div class="book-info">
+      <h3><%= book.volumeInfo.title %></h3>
+      <p>
+        <strong>Author:</strong> <%= book.volumeInfo.authors ?
+        book.volumeInfo.authors.join(', ') : 'Unknown' %>
+      </p>
+      <p>
+        <strong>Published:</strong> <%= book.volumeInfo.publishedDate || 'N/A'
+        %>
+      </p>
+      <p class="description">
+        <%= book.volumeInfo.description || 'No description available.' %>
+      </p>
+
+      <div class="card-actions">
+        <a href="<%= book.previewLink %>" target="_blank">Preview</a>
+        <form action="/books/add" method="post">
+          <input type="hidden" name="gb_id" value="<%= book.id %>" />
+          <button type="submit" class="add-btn">Add to Library</button>
+        </form>
       </div>
-    <% } %>
-
-<%- include('partials/footer') %>
+    </div>
+  </div>
+  <% }) %>
+</div>
+<% } %> <%- include('partials/footer') %>
