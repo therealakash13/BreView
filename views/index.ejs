@@ -5,12 +5,12 @@
   <div class="book-grid">
     <% books.forEach(book => { %>
       <div class="book-card">
-        <img class="book-cover" src="<%= book.thumbnail %>" alt="<%= book.title %>" />
+        <img class="book-cover" src="<%= book.image %>" alt="<%= book.title %>" />
 
         <div class="book-info">
           <h3><%= book.title %></h3>
-          <p><strong>Author:</strong> <%= book.author_names ? book.author_names.join(', ') : 'Unknown' %></p>
-          <p><strong>Published:</strong> <%= book.pub_date || 'N/A' %></p>
+          <p><strong>Author:</strong> <%= book.author_name ? book.author_name.join(', ') : 'Unknown' %></p>
+          <p><strong>Published:</strong> <%= book.publish_date || 'N/A' %></p>
           <p class="description"><%= book.description || 'No description available.' %></p>
 
           <div class="review-section">
@@ -23,6 +23,7 @@
 
           <div class="card-actions">
             <a href="<%= book.g_link %>" target="_blank">View</a>
+            <a href="/remove/<%= book.id %>">Remove from Library</a>
             <a href="/review/<%= book.id %>">Edit Review</a>
           </div>
         </div>

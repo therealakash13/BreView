@@ -46,8 +46,8 @@ async function searchBook(str, page) {
 }
 
 server.get("/", async (req, res) => {
-  const user = await pool.query(`SELECT * FROM users`);
-  const users = user.rows;
+  // const user = await pool.query(`SELECT * FROM users`);
+  // const users = user.rows;
   const book = await pool.query(`SELECT * FROM books`);
   const books = book.rows;
 
@@ -66,46 +66,96 @@ server.get("/search", async (req, res) => {
 });
 
 server.get("/books/add/:id", async (req, res) => {
-  const bookId = req.params.id;
-  console.log({ bookId });
+  try {
+    const bookId = req.params.id;
 
-  const response = await axios.get(
-    `https://www.googleapis.com/books/v1/volumes/${bookId}`,
-    {
-      params: { key: process.env.API_KEY },
-    }
-  );
-  const bookData = response.data;
-  const book = bookData;
+    if (bookId === "" || bookId === undefined || bookId === null)
+      throw new Error("Book id not found.");
 
-  await pool.query(
-    `
-  INSERT INTO books (
-    gb_id, title, author_names, categories, pub_date, description, pg_count,
-    book_type, isbn_13, m_rating, thumbnail, language, g_link
-  )
-  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-  ON CONFLICT (g_link) DO NOTHING
-  `,
-    [
-      book.id,
-      book.volumeInfo.title || "Untitled",
-      book.volumeInfo.authors || [],
-      book.volumeInfo.categories || [],
-      book.volumeInfo.publishedDate || null,
-      book.volumeInfo.description || null,
-      book.volumeInfo.pageCount || null,
-      book.volumeInfo.printType || null,
-      book.volumeInfo.industryIdentifiers?.find((i) => i.type === "ISBN_13")
-        ?.identifier || null,
-      book.volumeInfo.averageRating || null,
-      book.volumeInfo.imageLinks?.thumbnail || null,
-      book.volumeInfo.language || "en",
-      book.volumeInfo.infoLink || null,
-      // Fix some values are off
-    ]
-  );
+    const response = await axios.get(
+      `https://www.googleapis.com/books/v1/volumes/${bookId}`,
+      {
+        params: { key: process.env.API_KEY, projection: "lite" },
+      }
+    );
 
+    if (!response) throw new Error("Book not found.");
+
+    const bookData = response.data;
+    // console.log(bookData);
+
+    const book = {
+      id: bookData.id,
+      title: bookData.volumeInfo.title,
+      authors: bookData.volumeInfo.authors,
+      publishDate: bookData.volumeInfo.publishedDate,
+      description: bookData.volumeInfo.description,
+      bookCover:
+        bookData.volumeInfo.imageLinks.extraLarge ||
+        bookData.volumeInfo.imageLinks.large ||
+        bookData.volumeInfo.imageLinks.medium ||
+        bookData.volumeInfo.imageLinks.small ||
+        bookData.volumeInfo.imageLinks.thumbnail ||
+        bookData.volumeInfo.imageLinks.smallThumbnail,
+    };
+
+    console.log(book);
+
+    await pool.query(
+      `
+    INSERT INTO books (
+      book_id, image, title, author_name, publish_date, description
+    )
+    VALUES ($1,$2,$3,$4,$5,$6)
+    `,
+      [
+        book.id,
+        book.bookCover,
+        book.title,
+        book.authors,
+        book.publishDate,
+        book.description,
+      ]
+    );
+
+    res.redirect("/");
+  } catch (err) {
+    console.log(err.message || err.code);
+  }
+});
+
+server.get("/review/:id", async (req, res) => {
+  const bookId = Number(req.params.id);
+  const book = await pool.query(`SELECT * FROM books WHERE id = ${bookId}`);
+  res.render("review", { book: book.rows[0] });
+});
+
+server.post("/review/:id", async (req, res) => {
+  try {
+    const rating = req.body.rating;
+    const review = req.body.review;
+    const id = req.params.id;
+
+    if (review === "" || !id)
+      throw new Error("insufficient information provided.");
+
+    await pool.query(
+      `
+      UPDATE books
+      SET review = $1, rating = $2
+      WHERE id = $3;
+      `,
+      [review, rating, id]
+    );
+
+    res.redirect("/");
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+server.get("/remove/:id", async (req, res) => {
+  await pool.query(`DELETE FROM books WHERE id = $1`, [req.params.id]);
   res.redirect("/");
 });
 

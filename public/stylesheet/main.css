@@ -551,3 +551,52 @@ select#unit {
 .pages a:hover {
   scale: 1.8;
 }
+
+/* Reviews page */
+.book-review-card {
+  background-color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  width: 80%;
+  max-width: 800px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* .book-info {
+  display: flex;
+  gap: var(--space-md);
+  /* align-items: flex-start; */
+  /* margin-bottom: var(--space-md); */
+/* } */
+
+/* .book-cover {
+  width: 150px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+} */
+
+/* .book-meta {
+  flex: 1;
+  text-align: left;
+} */
+
+.book-description {
+  margin-top: var(--space-sm);
+  color: #555;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  text-align: left;
+}
+
+.review-form input,
+.review-form textarea {
+  width: 100%;
+}
+
+.review-form button {
+  align-self: flex-start;
+}

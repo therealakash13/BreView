@@ -1,0 +1,52 @@
+<%- include("partials/header") %>
+<div class="book-review-card shadow_accent">
+  <div class="book-info">
+    <img src="<%= book.image %>" alt="<%= book.title %>" class="book-cover" />
+
+    <div class="book-meta">
+      <h2><%= book.title %></h2>
+
+      <p class="book-authors">
+        <strong>Author(s):</strong>
+        <%= book.author_name.join(", ") %>
+      </p>
+
+      <p class="book-publish">
+        <strong>Published:</strong> <%= book.publish_date %>
+      </p>
+
+      <p class="book-description"><%= book.description %></p>
+    </div>
+  </div>
+
+  <hr />
+
+  <form action="/review/<%= book.id %>" method="POST" class="review-form">
+    <h3>Write a Review</h3>
+
+    <label for="rating">Rating (0–5):</label>
+    <input
+      type="number"
+      name="rating"
+      id="rating"
+      value="<%= book.rating %>"
+      step="0.1"
+      min="0"
+      max="5"
+      required
+    />
+
+    <label for="review">Your Review:</label>
+    <textarea
+      name="review"
+      id="review"
+      rows="4"
+      placeholder="Share your thoughts about this book..."
+      required
+    ><%= book.review || "" %></textarea>
+
+    <button type="submit" class="btn-primary">Submit Review</button>
+  </form>
+</div>
+
+<%- include("partials/footer") %>
