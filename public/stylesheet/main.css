@@ -60,7 +60,9 @@
   --border-lg: 4px;
 
   --text-shadow-accent-sm: 2px 2px var(--color-accent);
+  --text-shadow-secondary-sm: 2px 2px var(--color-secondary);
   --text-shadow-accent-lg: 4px 4px var(--color-accent);
+  --text-shadow-secondary-lg: 4px 4px var(--color-secondary);
 
   /* Widths */
   --translateY-width: 5px;
@@ -203,8 +205,8 @@ select#unit {
 }
 
 .container h1 {
-  color: var(--color-secondary);
-  text-shadow: var(--text-shadow-accent-sm);
+  color: var(--color-primary);
+  text-shadow: var(--text-shadow-secondary-lg);
 }
 
 .btn-primary {
@@ -627,7 +629,7 @@ select#unit {
 
 .pages strong {
   font-size: var(--text-2xl);
-  color: var(--color-primary) ;
+  color: var(--color-primary);
 }
 
 .pages a {
