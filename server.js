@@ -62,6 +62,7 @@ server.get("/search", async (req, res) => {
   if (books.length === 0) {
     return res.render("search", { q: query, page: page, results: [] });
   }
+
   res.render("search", { q: query, page: page, results: books });
 });
 
@@ -89,7 +90,7 @@ server.get("/books/add/:id", async (req, res) => {
       title: bookData.volumeInfo.title,
       authors: bookData.volumeInfo.authors,
       publishDate: bookData.volumeInfo.publishedDate,
-      description: bookData.volumeInfo.description,
+      description: bookData.volumeInfo.description.replace(/<[^>]+>/g, ""), // Data incoming is in pure html so have to remove all the tags
       bookCover:
         bookData.volumeInfo.imageLinks.extraLarge ||
         bookData.volumeInfo.imageLinks.large ||
@@ -98,8 +99,6 @@ server.get("/books/add/:id", async (req, res) => {
         bookData.volumeInfo.imageLinks.thumbnail ||
         bookData.volumeInfo.imageLinks.smallThumbnail,
     };
-
-    console.log(book);
 
     await pool.query(
       `
