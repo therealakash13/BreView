@@ -26,6 +26,11 @@
                 <li><a href="/">Home</a></li>
                 <li><a href="/search">Search</a></li>
                 <li><a href="/about">About</a></li>
+                <% if (locals.userId) { %>
+                    <li><a href="/auth/logout" id="logout_btn">Logout</a></li>
+                <% } else { %>
+                    <li><a href="/auth/login">Login</a></li>
+                <% } %>
             </ul>
 
             <button class="menu-btn" id="menu-btn">

@@ -4,10 +4,14 @@ import dotenv from "dotenv";
 import ejs from "ejs";
 import bodyParser from "body-parser";
 import axios from "axios";
+import bcrypt from "bcrypt";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 
 dotenv.config();
 
 const server = express();
+const pgSession = connectPgSimple(session);
 const port = process.env.PORT;
 
 const pool = new pg.Pool({
@@ -17,6 +21,16 @@ const pool = new pg.Pool({
   password: `${process.env.DB_PASSWORD}`,
   port: process.env.DB_PORT,
 });
+
+server.use(
+  session({
+    store: new pgSession({ pool }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 }, // 1 day
+  })
+);
 
 server.set("view engine", "ejs");
 server.use(express.static("public"));
@@ -45,28 +59,47 @@ async function searchBook(str, page) {
   }
 }
 
-server.get("/", async (req, res) => {
-  // const user = await pool.query(`SELECT * FROM users`);
-  // const users = user.rows;
-  const book = await pool.query(`SELECT * FROM books`);
-  const books = book.rows;
+function ensureAuth(req, res, next) {
+  if (!req.session.userId) return res.redirect("/auth/login");
+  next();
+}
 
-  res.render("index", { title: "BreView", books: books });
+server.get("/", ensureAuth, async (req, res) => {
+  const userId = req.session.userId;
+  const book = await pool.query(`SELECT * FROM books WHERE user_id = $1`, [
+    userId,
+  ]);
+  const books = book.rows;
+  res.render("index", {
+    title: "BreView",
+    books: books,
+    userId: req.session.userId,
+  });
 });
 
-server.get("/search", async (req, res) => {
+server.get("/search", ensureAuth, async (req, res) => {
   const query = req.query.q || "";
   const page = Number(req.query.page) || 0;
   const books = await searchBook(query, page);
 
   if (books.length === 0) {
-    return res.render("search", { q: query, page: page, results: [] });
+    return res.render("search", {
+      q: query,
+      page: page,
+      results: [],
+      userId: req.session.userId,
+    });
   }
 
-  res.render("search", { q: query, page: page, results: books });
+  res.render("search", {
+    q: query,
+    page: page,
+    results: books,
+    userId: req.session.userId,
+  });
 });
 
-server.get("/books/add/:id", async (req, res) => {
+server.get("/books/add/:id", ensureAuth, async (req, res) => {
   try {
     const bookId = req.params.id;
 
@@ -103,9 +136,9 @@ server.get("/books/add/:id", async (req, res) => {
     await pool.query(
       `
     INSERT INTO books (
-      book_id, image, title, author_name, publish_date, description
+      book_id, image, title, author_name, publish_date, description, user_id
     )
-    VALUES ($1,$2,$3,$4,$5,$6)
+    VALUES ($1,$2,$3,$4,$5,$6,$7)
     `,
       [
         book.id,
@@ -114,6 +147,7 @@ server.get("/books/add/:id", async (req, res) => {
         book.authors,
         book.publishDate,
         book.description,
+        req.session.userId,
       ]
     );
 
@@ -123,13 +157,13 @@ server.get("/books/add/:id", async (req, res) => {
   }
 });
 
-server.get("/review/:id", async (req, res) => {
+server.get("/review/:id", ensureAuth, async (req, res) => {
   const bookId = Number(req.params.id);
   const book = await pool.query(`SELECT * FROM books WHERE id = ${bookId}`);
-  res.render("review", { book: book.rows[0] });
+  res.render("review", { book: book.rows[0], userId: req.session.userId });
 });
 
-server.post("/review/:id", async (req, res) => {
+server.post("/review/:id", ensureAuth, async (req, res) => {
   try {
     const rating = req.body.rating;
     const review = req.body.review;
@@ -153,9 +187,82 @@ server.post("/review/:id", async (req, res) => {
   }
 });
 
-server.get("/remove/:id", async (req, res) => {
+server.get("/remove/:id", ensureAuth, async (req, res) => {
   await pool.query(`DELETE FROM books WHERE id = $1`, [req.params.id]);
   res.redirect("/");
+});
+
+server.get("/about", (req, res) => {
+  res.render("about", { userId: req.session.userId });
+});
+
+server.get("/auth/login", (req, res) => {
+  res.render("login", { userId: req.session.userId });
+});
+
+server.get("/auth/register", (req, res) => {
+  res.render("register");
+});
+
+server.post("/register", async (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+  try {
+    if (req.body.password !== req.body.confirmPassword) {
+      throw new Error("Passwords don't match. Retry...");
+    }
+
+    const salt = 12;
+    const hash = await bcrypt.hash(password + process.env.PEPPER, salt);
+
+    await pool.query(`INSERT INTO users (username,password) VALUES($1,$2)`, [
+      username,
+      hash,
+    ]);
+    return res.redirect("/auth/login");
+  } catch (error) {
+    console.log(error.message || error.code);
+    return res.redirect("/auth/register");
+  }
+});
+
+server.post("/login", async (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+  try {
+    const foundUser = await pool.query(
+      `SELECT * FROM users WHERE username = $1`,
+      [username]
+    );
+
+    if (foundUser.rowCount === 0)
+      throw new Error("No user exists with this username. Register...");
+    else if (foundUser.rowCount === 1) {
+      const user = foundUser.rows[0];
+      const match = await bcrypt.compare(
+        password + process.env.PEPPER,
+        user.password
+      );
+
+      if (match) {
+        req.session.username = user.username;
+        req.session.userId = user.id;
+        console.log(`Welcome ${user.username}`);
+        return res.redirect("/");
+      } else if (match === false) throw new Error("Incorrect password...");
+    } else if (foundUser.rowCount > 1) {
+      throw new Error("Data redundancy in Database. Can't login...");
+    }
+  } catch (error) {
+    console.log(error.message || error.code);
+    return res.redirect("/auth/login");
+  }
+});
+
+server.get("/auth/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/auth/login");
+  });
 });
 
 server.listen(port, (err) => {

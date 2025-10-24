@@ -1,0 +1,51 @@
+<%- include('partials/header') %>
+
+<h1>About</h1>
+<div class="about-container">
+  <!-- Profile Image -->
+  <div class="about-img">
+    <img
+      class="about-img"
+      src="/assets/images/mehero.png"
+      alt="Akash's Picture"
+    />
+  </div>
+
+  <div class="about-info">
+    <div>
+      <p class="about-text">
+        This project uses <strong>Google's Book API</strong> to fetch book data and render them using
+        <strong>EJS</strong>, used <strong>Postgres</strong> as database for data persistency and the UI is fully
+        modular (global css variables). Used
+        <strong>Node + Express</strong> (server) and <strong>Axios</strong> (data
+        fetching). For testing API's response and structure, I used <strong>Postman</strong>.
+      </p>
+    </div>
+    <!-- Modify key takeaways -->
+    <div class="takeaways">
+      <span>Key Takeaways:</span>
+      <ul>
+        <li><strong>Debugged API connectivity issues</strong> in Node.js caused by IPv6 preference (my ISP issue).</li>
+        <li><strong>Configured Axios</strong> with custom HTTP/HTTPS agents to force IPv6 connections, ensuring reliable API calls across different endpoints.</li>
+        <li>Learned about <strong>DNS resolution in Node.js</strong> and how network stack differences (IPv4 vs IPv6) affect real-world API reliability.</li>
+      </ul>
+    </div>
+      
+    <div class="about-details">
+      <ul>
+        <li><p><span>Email:</span> therealakash13@gmail.com</p></li>
+        <li><p><span>Phone:</span> +91 9971104373 </p></li>
+        <li><p><span>Location:</span> Delhi, India</p></li>
+        <li><p><span>Hobbies:</span> Code, Chai, Anime, Music</p></li>
+      </ul>
+    </div>
+
+    <div class="social-icons">
+      <a href="#"><img src="/assets/images/github.png" alt="GitHub" /></a>
+      <a href="#"><img src="/assets/images/gmail.png" alt="Gmail" /></a>
+      <a href="#"><img src="/assets/images/linkedin.png" alt="LinkedIn" /></a>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
