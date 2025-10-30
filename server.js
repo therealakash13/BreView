@@ -7,7 +7,8 @@ import axios from "axios";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-
+import dns from 'dns';
+dns.setDefaultResultOrder("ipv4first");
 dotenv.config();
 
 const server = express();
